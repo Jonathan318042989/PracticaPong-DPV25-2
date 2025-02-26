@@ -1,0 +1,36 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Jonathan\\Desktop\\PracticaPong-DPV25-2\\Practica1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{B72E3D0D-8133-4B9D-AADC-6E072EB7D3DA}|Practica1.vcxproj|C:\\Users\\Jonathan\\Desktop\\PracticaPong-DPV25-2\\PracticaPong.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PracticaPong.cpp",
+              "DocumentMoniker": "C:\\Users\\Jonathan\\Desktop\\PracticaPong-DPV25-2\\PracticaPong.cpp",
+              "RelativeDocumentMoniker": "..\\PracticaPong.cpp",
+              "ToolTip": "C:\\Users\\Jonathan\\Desktop\\PracticaPong-DPV25-2\\PracticaPong.cpp",
+              "RelativeToolTip": "..\\PracticaPong.cpp",
+              "ViewState": "AgIAACYAAAAAAAAAAAAYwC0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-02-26T01:55:18.155Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
