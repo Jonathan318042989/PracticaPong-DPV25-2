@@ -8,7 +8,7 @@
 double xpos, ypos, ydir, xdir;         // x and y position for house to be drawn
 double sx, sy, squash;          // xy scale factors
 double rot, rdir;             // rotation 
-int SPEED = 20;        // speed of timer call back in msecs
+int SPEED = 25;        // speed of timer call back in msecs
 GLfloat T1[16] = { 1.,0.,0.,0.,\
 				  0.,1.,0.,0.,\
 				  0.,0.,1.,0.,\
@@ -37,12 +37,22 @@ void MyCircle2f(GLfloat centerx, GLfloat centery, GLfloat radius) {
 	glEnd();
 }
 
-GLfloat RadiusOfBall = 15.;
+GLfloat RadiusOfBall = 5.;
 // Draw the ball, centered at the origin
 void draw_ball() {
 	glColor3f(0.6, 0.3, 0.);
 	MyCircle2f(0., 0., RadiusOfBall);
 
+}
+
+void draw_paddle(float x, float y) {
+	glColor3f(0.0, 0.0, 0.0);
+	glBegin(GL_QUADS);
+	glVertex2f(x - 5, y - 20);
+	glVertex2f(x + 5, y - 20);
+	glVertex2f(x + 5, y + 20);
+	glVertex2f(x - 5, y + 20);
+	glEnd();
 }
 
 void timer(int) {
@@ -52,6 +62,8 @@ void timer(int) {
 
 void Display(void)
 {
+	draw_paddle(150, 60);
+	draw_paddle(10, 60);
 	// swap the buffers
 	glutSwapBuffers();
 
@@ -106,7 +118,7 @@ void Display(void)
 	  // draw the ball
 	  draw_ball();
 	*/
-
+	glPushMatrix();
 	//Translate the bouncing ball to its new position
 	T[12] = xpos;
 	T[13] = ypos;
@@ -124,6 +136,7 @@ void Display(void)
 	glMultMatrixf(T1);
 
 	draw_ball();
+	glPopMatrix();
 	glutTimerFunc(SPEED, timer, 0);
 
 
@@ -147,7 +160,7 @@ void reshape(int w, int h)
 
 void init(void) {
 	//set the clear color to be white
-	glClearColor(0.0, 0.8, 0.0, 1.0);
+	glClearColor(1.0, 1.0, 1.0, 1.0);
 	// initial position set to 0,0
 	xpos = 60; ypos = RadiusOfBall; xdir = 1; ydir = 1;
 	sx = 1.; sy = 1.; squash = 0.9;
@@ -162,7 +175,7 @@ int main(int argc, char* argv[])
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(800, 720);
-	glutCreateWindow("Bouncing Ball");
+	glutCreateWindow("Pong");
 	init();
 	glutDisplayFunc(Display);
 	glutReshapeFunc(reshape);
