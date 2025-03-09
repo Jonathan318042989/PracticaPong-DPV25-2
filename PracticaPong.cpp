@@ -8,12 +8,18 @@
 
 #define PI 3.1415926535898 
 
-double xpos_ball, ypos_ball, ydir_ball, xdir_ball, xvel_ball, yvel_ball;         // posiciones, direcciones y velocidad de la bola en x,y
+double xpos_ball, ypos_ball, ydir_ball, xdir_ball;
+float xvel_ball = 0.8;
+float yvel_ball = 0.5;
 double xpos_j1, ypos_j1, xpos_j2, ypos_j2; //posiciones de las paletas
 double vel_paddle = 10.0;
 double sx, sy, squash;          // xy scale factors
 double rot, rdir;             // rotation 
 int SPEED = 25;        // speed of timer call back in msecs
+bool inicio = true;
+int score_j1 = 0;
+int score_j2 = 0;
+int score = 0;
 int WINDOW_HEIGHT = 720;
 int WINDOW_WIDTH = 800;
 
@@ -60,6 +66,29 @@ void initial_position_paddle() {
 	ypos_j2 = 60;
 }
 
+void initial_position_ball() {
+	xpos_ball = 80.;
+	ypos_ball = 50.;
+	if (!inicio) {
+		if (score == 1) {
+			ydir_ball = 1;
+			xdir_ball = -1;
+			yvel_ball *= -1;
+			xvel_ball *= -1;
+		}
+		else {
+			ydir_ball = -1;
+			xdir_ball = 1;
+			yvel_ball *= -1;
+			xvel_ball *= -1;
+		}
+	}
+	else {
+		ydir_ball = 1;
+		xdir_ball = 1;
+	}
+}
+
 void draw_paddle(float x, float y) {
 	/* Función para dibujar una paleta en las coordenadas dadas
 	* @param x, y coordenadas donde dibujar la paleta
@@ -74,6 +103,12 @@ void draw_paddle(float x, float y) {
 	glEnd();
 }
 
+void reset_positions() {
+	printf("Jugador 1: %d | Jugador 2:  %d \n", score_j1, score_j2);
+	initial_position_ball();
+	initial_position_paddle();
+}
+
 void timer(int) {
 	glutPostRedisplay();
 	glutTimerFunc(SPEED, timer, 0);
@@ -83,60 +118,27 @@ void Display(void)
 {
 	draw_paddle(xpos_j1, ypos_j1);
 	draw_paddle(xpos_j2, ypos_j2);
-	// swap the buffers
 	glutSwapBuffers();
-
-	//clear all pixels with the specified clear color
 	glClear(GL_COLOR_BUFFER_BIT);
-	// 160 is max X value in our world
-	  // Define X position of the ball to be at center of window
-	xpos_ball = 80.;
+	ypos_ball += yvel_ball;
+	xpos_ball += xvel_ball;
 
-	// Shape has hit the ground! Stop moving and start squashing down and then back up 
-
-	if (ypos_ball == RadiusOfBall && ydir_ball == -1) {
-		/*sy = sy * squash;
-
-		if (sy < 0.8)
-			// reached maximum suqash, now unsquash back up
-			squash = 1.1;
-		else if (sy > 1.) {
-			// reset squash parameters and bounce ball back upwards
-			sy = 1.;
-			squash = 0.9;
-			ydir = 1;
-		}*/
-		sy = 1.;
-		ydir_ball = 1;
-		sx = 1. / sy;
-	}
-	// 120 is max Y value in our world
-	// set Y position to increment 1.5 times the direction of the bounce
-	else {
-		ypos_ball = ypos_ball + ydir_ball * 1.0 - (1. - sy) * RadiusOfBall;
-		// If ball touches the top, change direction of ball downwards
-		if (ypos_ball == 120 - RadiusOfBall)
-			ydir_ball = -1;
-		// If ball touches the bottom, change direction of ball upwards
-		else if (ypos_ball < RadiusOfBall)
-			ydir_ball = 1;
+	if (ypos_ball + RadiusOfBall >= 120 || ypos_ball - RadiusOfBall <= 0) {
+		yvel_ball *= -1;
+		ydir_ball *= -1;
 	}
 
-	/*  //reset transformation state
-	  glLoadIdentity();
+	if (xpos_ball + RadiusOfBall >= 160) {
+		score = 1;
+		score_j1 += 1;
+		reset_positions();
+	}
 
-	  // apply translation
-	  glTranslatef(xpos,ypos, 0.);
-
-	  // Translate ball back to center
-	  glTranslatef(0.,-RadiusOfBall, 0.);
-	  // Scale the ball about its bottom
-	  glScalef(sx,sy, 1.);
-	  // Translate ball up so bottom is at the origin
-	  glTranslatef(0.,RadiusOfBall, 0.);
-	  // draw the ball
-	  draw_ball();
-	*/
+	if (xpos_ball - RadiusOfBall <= 0){
+		score = 2;
+		score_j2 += 1;
+		reset_positions();
+	}
 	glPushMatrix();
 	//Translate the bouncing ball to its new position
 	T[12] = xpos_ball;
@@ -157,8 +159,6 @@ void Display(void)
 	draw_ball();
 	glPopMatrix();
 	glutTimerFunc(SPEED, timer, 0);
-
-
 
 }
 
@@ -205,6 +205,8 @@ void init(void) {
 	sx = 1.; sy = 1.; squash = 0.9;
 	rot = 0;
 	initial_position_paddle();
+	initial_position_ball();
+	inicio = false;
 }
 
 
