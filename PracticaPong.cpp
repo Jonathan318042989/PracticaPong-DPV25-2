@@ -2,13 +2,21 @@
 #include <GL/glut.h> //the glut file for windows operations
 					 // it also includes gl.h and glu.h for the openGL library calls
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define PI 3.1415926535898 
 
-double xpos, ypos, ydir, xdir;         // x and y position for house to be drawn
+double xpos_ball, ypos_ball, ydir_ball, xdir_ball, xvel_ball, yvel_ball;         // posiciones, direcciones y velocidad de la bola en x,y
+double xpos_j1, ypos_j1, xpos_j2, ypos_j2; //posiciones de las paletas
+double vel_paddle = 10.0;
 double sx, sy, squash;          // xy scale factors
 double rot, rdir;             // rotation 
 int SPEED = 25;        // speed of timer call back in msecs
+int WINDOW_HEIGHT = 720;
+int WINDOW_WIDTH = 800;
+
 GLfloat T1[16] = { 1.,0.,0.,0.,\
 				  0.,1.,0.,0.,\
 				  0.,0.,1.,0.,\
@@ -45,13 +53,24 @@ void draw_ball() {
 
 }
 
+void initial_position_paddle() {
+	xpos_j1 = 10;
+	ypos_j1 = 60;
+	xpos_j2 = 150;
+	ypos_j2 = 60;
+}
+
 void draw_paddle(float x, float y) {
+	/* Función para dibujar una paleta en las coordenadas dadas
+	* @param x, y coordenadas donde dibujar la paleta
+	* 
+	*/
 	glColor3f(0.0, 0.0, 0.0);
 	glBegin(GL_QUADS);
-	glVertex2f(x - 5, y - 20);
-	glVertex2f(x + 5, y - 20);
-	glVertex2f(x + 5, y + 20);
-	glVertex2f(x - 5, y + 20);
+	glVertex2f(x - 2.5f, y - 15);
+	glVertex2f(x + 2.5f, y - 15);
+	glVertex2f(x + 2.5f, y + 15);
+	glVertex2f(x - 2.5f, y + 15);
 	glEnd();
 }
 
@@ -62,8 +81,8 @@ void timer(int) {
 
 void Display(void)
 {
-	draw_paddle(150, 60);
-	draw_paddle(10, 60);
+	draw_paddle(xpos_j1, ypos_j1);
+	draw_paddle(xpos_j2, ypos_j2);
 	// swap the buffers
 	glutSwapBuffers();
 
@@ -71,11 +90,11 @@ void Display(void)
 	glClear(GL_COLOR_BUFFER_BIT);
 	// 160 is max X value in our world
 	  // Define X position of the ball to be at center of window
-	xpos = 80.;
+	xpos_ball = 80.;
 
 	// Shape has hit the ground! Stop moving and start squashing down and then back up 
 
-	if (ypos == RadiusOfBall && ydir == -1) {
+	if (ypos_ball == RadiusOfBall && ydir_ball == -1) {
 		/*sy = sy * squash;
 
 		if (sy < 0.8)
@@ -88,19 +107,19 @@ void Display(void)
 			ydir = 1;
 		}*/
 		sy = 1.;
-		ydir = 1;
+		ydir_ball = 1;
 		sx = 1. / sy;
 	}
 	// 120 is max Y value in our world
 	// set Y position to increment 1.5 times the direction of the bounce
 	else {
-		ypos = ypos + ydir * 1.0 - (1. - sy) * RadiusOfBall;
+		ypos_ball = ypos_ball + ydir_ball * 1.0 - (1. - sy) * RadiusOfBall;
 		// If ball touches the top, change direction of ball downwards
-		if (ypos == 120 - RadiusOfBall)
-			ydir = -1;
+		if (ypos_ball == 120 - RadiusOfBall)
+			ydir_ball = -1;
 		// If ball touches the bottom, change direction of ball upwards
-		else if (ypos < RadiusOfBall)
-			ydir = 1;
+		else if (ypos_ball < RadiusOfBall)
+			ydir_ball = 1;
 	}
 
 	/*  //reset transformation state
@@ -120,8 +139,8 @@ void Display(void)
 	*/
 	glPushMatrix();
 	//Translate the bouncing ball to its new position
-	T[12] = xpos;
-	T[13] = ypos;
+	T[12] = xpos_ball;
+	T[13] = ypos_ball;
 	glLoadMatrixf(T);
 
 	T1[13] = -RadiusOfBall;
@@ -143,6 +162,26 @@ void Display(void)
 
 }
 
+void keyboard_input(unsigned char key, int x, int y) {
+	/* Función para detectar y procesar la entrada del teclado
+	*/
+	if (key == 'w' && ypos_j1 + 15 + vel_paddle <= 120) {
+		ypos_j1 += vel_paddle;
+	}
+
+	if (key == 's' && ypos_j1 - 15 - vel_paddle >= 0) {
+		ypos_j1 -= vel_paddle;
+	}
+
+	if (key == 'i' && ypos_j2 + 15 + vel_paddle <= 120) {
+		ypos_j2 += vel_paddle;
+	}
+
+	if (key == 'k' && ypos_j2 - 15 - vel_paddle >= 0) {
+		ypos_j2 -= vel_paddle;
+	}
+}
+
 void reshape(int w, int h)
 {
 	// on reshape and on startup, keep the viewport to be the entire size of the window
@@ -162,10 +201,10 @@ void init(void) {
 	//set the clear color to be white
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	// initial position set to 0,0
-	xpos = 60; ypos = RadiusOfBall; xdir = 1; ydir = 1;
+	xpos_ball = 60; ypos_ball = RadiusOfBall; xdir_ball = 1; ydir_ball = 1;
 	sx = 1.; sy = 1.; squash = 0.9;
 	rot = 0;
-
+	initial_position_paddle();
 }
 
 
@@ -174,11 +213,12 @@ int main(int argc, char* argv[])
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowSize(800, 720);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Pong");
 	init();
 	glutDisplayFunc(Display);
 	glutReshapeFunc(reshape);
+	glutKeyboardFunc(keyboard_input);
 	glutMainLoop();
 
 	return 1;
