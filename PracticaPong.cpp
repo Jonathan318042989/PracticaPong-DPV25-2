@@ -1,27 +1,26 @@
-//#include <windows.h> //the windows include file, required by all windows applications
-#include <GL/glut.h> //the glut file for windows operations
-					 // it also includes gl.h and glu.h for the openGL library calls
+#include <GL/glut.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #define PI 3.1415926535898 
 
 double xpos_ball, ypos_ball, ydir_ball, xdir_ball;
-float xvel_ball = 0.8;
+float xvel_ball = 0.5;
 float yvel_ball = 0.5;
 double xpos_j1, ypos_j1, xpos_j2, ypos_j2; //posiciones de las paletas
 double vel_paddle = 10.0;
 double sx, sy, squash;          // xy scale factors
 double rot, rdir;             // rotation 
-int SPEED = 25;        // speed of timer call back in msecs
+int SPEED = 20;        // speed of timer call back in msecs
 bool inicio = true;
 int score_j1 = 0;
 int score_j2 = 0;
 int score = 0;
 int WINDOW_HEIGHT = 720;
 int WINDOW_WIDTH = 800;
+double ball_up, ball_down, ball_left, ball_right; //
+float j1_up, j1_down, j1_right, j2_up, j2_down, j2_left;
 
 GLfloat T1[16] = { 1.,0.,0.,0.,\
 				  0.,1.,0.,0.,\
@@ -56,43 +55,63 @@ GLfloat RadiusOfBall = 5.;
 void draw_ball() {
 	glColor3f(0.6, 0.3, 0.);
 	MyCircle2f(0., 0., RadiusOfBall);
-
 }
 
 void initial_position_paddle() {
-	xpos_j1 = 10;
+	xpos_j1 = 5;
 	ypos_j1 = 60;
-	xpos_j2 = 150;
+	xpos_j2 = 155;
 	ypos_j2 = 60;
 }
 
 void initial_position_ball() {
 	xpos_ball = 80.;
 	ypos_ball = 50.;
+	int diry = rand() % 2;
+	if (diry == 0) {
+		diry = -1;
+	}
 	if (!inicio) {
 		if (score == 1) {
-			ydir_ball = 1;
-			xdir_ball = -1;
-			yvel_ball *= -1;
+			
+			yvel_ball *= diry;
 			xvel_ball *= -1;
 		}
 		else {
-			ydir_ball = -1;
-			xdir_ball = 1;
-			yvel_ball *= -1;
+			
+			yvel_ball *= diry;
 			xvel_ball *= -1;
 		}
 	}
 	else {
-		ydir_ball = 1;
+		ydir_ball = diry;
 		xdir_ball = 1;
 	}
+}
+
+void update_ball_hitbox() {
+	/*	Función para actualizar la hitbox cuadrada de la pelota
+	*/
+	ball_up = ypos_ball + RadiusOfBall;
+	ball_down = ypos_ball - RadiusOfBall;
+	ball_left = xpos_ball - RadiusOfBall;
+	ball_right = xpos_ball + RadiusOfBall;
+}
+
+void update_paddle_hitbox() {
+	/*	Función para actualizar la hitbox rectangular de las paletas
+	*/
+	j1_down = ypos_j1 - 15;
+	j1_up = ypos_j1 + 15;
+	j1_right = xpos_j1 + 2.5f;
+	j2_down = ypos_j2 - 15;
+	j2_up = ypos_j2 + 15;
+	j2_left = xpos_j2 - 2.5f;
 }
 
 void draw_paddle(float x, float y) {
 	/* Función para dibujar una paleta en las coordenadas dadas
 	* @param x, y coordenadas donde dibujar la paleta
-	* 
 	*/
 	glColor3f(0.0, 0.0, 0.0);
 	glBegin(GL_QUADS);
@@ -104,6 +123,8 @@ void draw_paddle(float x, float y) {
 }
 
 void reset_positions() {
+	/*	Función para resetear las posiciones de las paletas y la pelota a su punto de inicio en el juego.
+	*/
 	printf("Jugador 1: %d | Jugador 2:  %d \n", score_j1, score_j2);
 	initial_position_ball();
 	initial_position_paddle();
@@ -120,8 +141,11 @@ void Display(void)
 	draw_paddle(xpos_j2, ypos_j2);
 	glutSwapBuffers();
 	glClear(GL_COLOR_BUFFER_BIT);
+
 	ypos_ball += yvel_ball;
 	xpos_ball += xvel_ball;
+	update_ball_hitbox();
+	update_paddle_hitbox();
 
 	if (ypos_ball + RadiusOfBall >= 120 || ypos_ball - RadiusOfBall <= 0) {
 		yvel_ball *= -1;
@@ -139,7 +163,21 @@ void Display(void)
 		score_j2 += 1;
 		reset_positions();
 	}
+
+	if (ball_left <= j1_right &&
+		ball_up >= j1_down &&
+		ball_down <= j1_up) {
+		xvel_ball *= -1;
+	}
+
+	if (ball_right >= j2_left &&
+		ball_up >= j2_down &&
+		ball_down <= j2_up) {
+		xvel_ball *= -1;
+	}
+
 	glPushMatrix();
+
 	//Translate the bouncing ball to its new position
 	T[12] = xpos_ball;
 	T[13] = ypos_ball;
@@ -159,7 +197,6 @@ void Display(void)
 	draw_ball();
 	glPopMatrix();
 	glutTimerFunc(SPEED, timer, 0);
-
 }
 
 void keyboard_input(unsigned char key, int x, int y) {
