@@ -6,8 +6,8 @@
 #define PI 3.1415926535898 
 
 double xpos_ball, ypos_ball, ydir_ball, xdir_ball;
-float xvel_ball = 0.5;
-float yvel_ball = 0.5;
+float xvel_ball = 1.5;
+float yvel_ball = 1.5;
 double xpos_j1, ypos_j1, xpos_j2, ypos_j2; //posiciones de las paletas
 double vel_paddle = 10.0;
 double sx, sy, squash;          // xy scale factors
@@ -196,7 +196,7 @@ void Display(void)
 
 	draw_ball();
 	glPopMatrix();
-	glutTimerFunc(SPEED, timer, 0);
+	
 }
 
 void keyboard_input(unsigned char key, int x, int y) {
@@ -258,7 +258,9 @@ int main(int argc, char* argv[])
 	glutDisplayFunc(Display);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard_input);
+	glutTimerFunc(SPEED, timer, 0);
 	glutMainLoop();
+
 
 	return 1;
 }
